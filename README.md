@@ -1,10 +1,10 @@
 ## PyFladesk
 
-Create desktop application by using Flask and QtWebEngine.
+Create desktop application by using Flask and PyWebView.
 
 ## Idea
 
-Rather than open Flask app in user browser, create a QWebview and then run Flask app on it.
+Rather than open Flask app in user browser, create a PyWebView and then run Flask app on it.
 
 By default, every internal link is open inside the app and every external link is open in the default browser.
 
@@ -12,19 +12,15 @@ By default, every internal link is open inside the app and every external link i
 
 - Python3
 - Flask
-- PyQt
+- PyWebView
 
 Note: Some releases require Conda to properly create a virtual environment.
 
 ## Versions
 
-There are 3 available versions:
+There are 1 available versions:
 
-- [PyQt4 - Legacy](https://github.com/smoqadam/PyFladesk/releases/tag/0.1)
-- [PyQt5.6 - Legacy](https://github.com/smoqadam/PyFladesk/releases/tag/0.2)
-- [PyQt5.10](https://github.com/smoqadam/PyFladesk/releases/tag/1.0)
-
-Note: Both PyQt4 and PyQt5.6 are only made available for compatibility reasons, there is no intention to keep them updated unless requested.
+- PyWebView
 
 ## Installation with pip
 
@@ -144,22 +140,15 @@ Also from [issue #9](https://github.com/smoqadam/PyFladesk/issues/9#issuecomment
 
 Since Qt is quite big, your executables will be big too. The example app of this repository is 70 MB (69 MB of which are the Qt Component for displaying HTML). This is reasonable taking into account that we are shipping a self contain web browser. In case size is crucial, you can follow [this suggestions](https://elc.github.io/posts/executable-flask-pyinstaller/#the-other-problem-the-size)
 
-## Sample apps
-
-List of apps made by PyFladesk
-
-- [RSS Reader](https://github.com/smoqadam/PyFladesk-rss-reader)
 
 ## Contributing Oportunities
 
 Feel free to open issues and pull requests for new features and improvements. This is a guide for things that may be useful for the project:
 
-- Add different backends (wxPython, TKinter, etc)
 - Test performance of HTML5 and CSS3
 - Add Directory structure for large projects (Flask Patterns)
 - Test other micro web frameworks (Bottle, etc)
 - Make sample apps
 
-## Thanks
-
-Thanks to [Mathias Ettinger](http://codereview.stackexchange.com/users/84718/mathias-ettinger) for his reviews, one [for the old code](https://codereview.stackexchange.com/a/114307/161364) and one [for the new one](https://codereview.stackexchange.com/a/188124/161364)
+## Observation
+- This app is a reimplementation based on [PyFladesk](https://github.com/smoqadam/PyFladesk) (Thanks to [smoqadam](https://github.com/smoqadam) for the original idea).

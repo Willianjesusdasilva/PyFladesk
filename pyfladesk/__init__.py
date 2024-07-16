@@ -1,38 +1,41 @@
-import sys
-from PyQt5 import QtCore, QtWidgets, QtGui, QtWebEngineWidgets
+import webview
+from threading import Thread
+import werkzeug.serving
 import socket
+import time
+import sys
 
-
-class ApplicationThread(QtCore.QThread):
+class ApplicationThread():
     def __init__(self, application, port=5000):
-        super(ApplicationThread, self).__init__()
         self.application = application
         self.port = port
+        self.server = None
+        self.flask_thread = None
+    
+    def _run_flask_app(self):
+        self.server = werkzeug.serving.make_server('localhost', self.port, self.application)
+        self.server.serve_forever()
 
-    def __del__(self):
-        self.wait()
+    def start(self):
+        self.flask_thread = Thread(target=self._run_flask_app)
+        self.flask_thread.start()
 
-    def run(self):
-        self.application.run(port=self.port, threaded=True)
+    def stop(self):
+        if self.server:
+            self.server.shutdown()
+        self.flask_thread.join()
 
-
-class WebPage(QtWebEngineWidgets.QWebEnginePage):
-    def __init__(self, root_url):
-        super(WebPage, self).__init__()
-        self.root_url = root_url
-
-    def home(self):
-        self.load(QtCore.QUrl(self.root_url))
-
-    def acceptNavigationRequest(self, url, kind, is_main_frame):
-        """Open external links in browser and internal links in the webview"""
-        ready_url = url.toEncoded().data().decode()
-        is_clicked = kind == self.NavigationTypeLinkClicked
-        if is_clicked and self.root_url not in ready_url:
-            QtGui.QDesktopServices.openUrl(url)
-            return False
-        return super(WebPage, self).acceptNavigationRequest(url, kind, is_main_frame)
-
+def _wait_for_flask(port):
+    for _ in range(10):
+        try:
+            sock = socket.create_connection(('localhost', port), timeout=1)
+            sock.close()
+            break
+        except (ConnectionRefusedError, socket.timeout):
+            time.sleep(0.5)
+    else:
+        print("O servidor Flask não pôde ser iniciado.")
+        return
 
 def init_gui(application, port=0, width=800, height=600,
              window_title="PyFladesk", icon="appicon.png", argv=None):
@@ -45,26 +48,17 @@ def init_gui(application, port=0, width=800, height=600,
         port = sock.getsockname()[1]
         sock.close()
 
-    # Application Level
-    qtapp = QtWidgets.QApplication(argv)
     webapp = ApplicationThread(application, port)
     webapp.start()
-    qtapp.aboutToQuit.connect(webapp.terminate)
 
-    # Main Window Level
-    window = QtWidgets.QMainWindow()
-    window.resize(width, height)
-    window.setWindowTitle(window_title)
-    window.setWindowIcon(QtGui.QIcon(icon))
+    _wait_for_flask(port)
 
-    # WebView Level
-    webView = QtWebEngineWidgets.QWebEngineView(window)
-    window.setCentralWidget(webView)
-
-    # WebPage Level
-    page = WebPage('http://localhost:{}'.format(port))
-    page.home()
-    webView.setPage(page)
-
-    window.show()
-    return qtapp.exec_()
+    webview.create_window(window_title, f'localhost:{port}', width=width, height=height)
+    webview.settings = {
+        'ALLOW_DOWNLOADS': False,
+        'ALLOW_FILE_URLS': True,
+        'OPEN_EXTERNAL_LINKS_IN_BROWSER': True,
+        'OPEN_DEVTOOLS_IN_DEBUG': False
+        }
+    webview.start()
+    webapp.stop()
